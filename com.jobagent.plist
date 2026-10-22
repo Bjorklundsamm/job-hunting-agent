@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<!-- Install: cp com.jobagent.plist ~/Library/LaunchAgents/ && launchctl load ~/Library/LaunchAgents/com.jobagent.plist -->
+<plist version="1.0">
+<dict>
+    <key>Label</key>
+    <string>com.jobagent</string>
+    <key>ProgramArguments</key>
+    <array>
+        <string>/Users/aloof/Documents/Job Finding Agent/.venv/bin/python</string>
+        <string>-m</string>
+        <string>job_agent</string>
+        <string>run</string>
+    </array>
+    <key>WorkingDirectory</key>
+    <string>/Users/aloof/Documents/Job Finding Agent</string>
+    <key>RunAtLoad</key>
+    <true/>
+    <key>KeepAlive</key>
+    <true/>
+    <key>ThrottleInterval</key>
+    <integer>60</integer>
+    <key>StandardOutPath</key>
+    <string>/Users/aloof/Documents/Job Finding Agent/logs/launchd.out.log</string>
+    <key>StandardErrorPath</key>
+    <string>/Users/aloof/Documents/Job Finding Agent/logs/launchd.err.log</string>
+</dict>
+</plist>

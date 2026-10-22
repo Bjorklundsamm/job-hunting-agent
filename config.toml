@@ -1,0 +1,73 @@
+# Job Finding Agent — static settings. Edit freely; restart the agent to apply.
+# Preferences learned from your Signal replies live in data/preferences.json instead.
+
+timezone = "America/Los_Angeles"
+home_location = "San Diego, CA"
+resume_path = "SB - Resume.pdf"
+
+[schedule]
+active_start = "07:00"            # never message you before this...
+active_end = "22:00"              # ...or after this (replies to your messages are always answered)
+digest_times = ["09:00", "12:30", "17:30"]
+search_interval_minutes = 90      # one source is searched per cycle, rotating through `sources`
+signal_poll_seconds = 60
+
+[delivery]
+max_per_digest = 3
+shortlist_score = 68              # first-pass (Haiku) score that earns a careful read by the judge model
+urgent_shortlist_score = 80       # same, for new listings checked every cycle for an urgent send
+min_score = 78                    # judge's final score needed to be sent, even if a digest ends up empty
+urgent_score = 92                 # a job at/above this (confirmed by the judge model) is sent immediately
+max_urgent_per_day = 2
+urgent_fresh_hours = 24           # only listings first found within this window can be sent as urgent
+candidate_max_age_days = 10       # don't recommend listings last seen longer ago than this
+dedupe_window_days = 45           # same company + same title within this window = the same opening
+
+[search]
+hours_old = 72                    # only fetch listings posted in the last N hours
+results_per_query = 25
+queries_per_cycle = 3
+# Rotation order; one entry per search cycle, repeats give a source more turns.
+# Keyword search: linkedin, indeed, glassdoor, zip_recruiter, himalayas, remotive (google: currently broken)
+# Whole-feed:     company_boards (companies.toml), weworkremotely, remoteok
+sources = [
+  "linkedin", "indeed", "company_boards", "himalayas", "glassdoor", "zip_recruiter",
+  "linkedin", "indeed", "company_boards", "remotive", "weworkremotely", "remoteok",
+]
+queries = [
+  "technical account manager",
+  "AI support engineer",
+  "technical support engineer",
+  "solutions engineer AI",
+  "customer engineer",
+  "forward deployed engineer",
+  "IT systems engineer",
+  "IT support engineer",
+  "implementation engineer",
+  "AI solutions engineer",
+  "customer success engineer",
+  "support engineer LLM",
+  "IT administrator",
+  "software engineer AI integration",
+  "technical customer success manager",
+  "customer success manager",
+]
+# Titles containing any of these are dropped before any LLM call (case-insensitive).
+title_blocklist = [
+  "intern", "internship", "new grad", "entry level",
+  "account executive", "sales development", "business development representative",
+  "nurse", "driver", "warehouse", "technician i ", "help desk tier 1",
+  "vice president", "vp ", "chief ",
+]
+
+[llm]
+# Cheap model screens every new listing; the judge model only sees the shortlist.
+screen_model = "claude-haiku-5-5"
+judge_model = "claude-opus-5-5"
+screen_effort = "low"
+judge_effort = "medium"
+screen_batch_size = 8
+max_screen_per_cycle = 80         # caps LLM screening per search cycle; the rest wait in the queue (best-first)
+max_judge_candidates = 8
+daily_budget_usd = 1.00           # hard stop for LLM spend per calendar day
+max_description_chars = 6000      # listings are trimmed of EEO/benefits boilerplate, then capped here

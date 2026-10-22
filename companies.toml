@@ -1,0 +1,28 @@
+# Company career boards scanned by the "company_boards" source.
+# Each entry is the company's board slug on that system, e.g. boards.greenhouse.io/<slug>,
+# jobs.lever.co/<slug>, jobs.ashbyhq.com/<slug>. Add or remove freely. An unknown slug is just skipped.
+# These were verified on 2026-10-21. Companies on Workday or custom sites can't be scanned this way.
+
+greenhouse = [
+  "abnormalsecurity", "airtable", "anthropic", "asana", "assemblyai", "attentive", "brex",
+  "chainguard", "cloudflare", "cockroachlabs", "coreweave", "cresta", "cribl", "databricks",
+  "datadog", "descript", "discord", "dropbox", "elastic", "fastly", "figma", "fivetran",
+  "flexport", "gemini", "gitlab", "gleanwork", "grafanalabs", "gusto", "honeycomb", "huntress",
+  "imply", "intercom", "island", "labelbox", "lattice", "launchdarkly", "mixpanel", "modernhealth",
+  "mongodb", "netlify", "newrelic", "okta", "pagerduty", "pendo", "planetscale", "reddit",
+  "sambanovasystems", "samsara", "scaleai", "snorkelai", "starburst", "stripe", "tailscale",
+  "tanium", "toast", "togetherai", "twilio", "vercel", "verkada", "wizinc", "zoominfo"
+]
+
+lever = [
+  "neon", "outreach", "palantir", "secureframe"
+]
+
+ashby = [
+  "1password", "airbyte", "amplitude", "anyscale", "astronomer", "baseten", "benchling",
+  "character", "clickhouse", "cohere", "crusoe", "cursor", "decagon", "deepgram", "drata",
+  "elevenlabs", "harvey", "hex", "hightouch", "kong", "lambda", "langchain", "linear", "lovable",
+  "miro", "modal", "motherduck", "mux", "notion", "openai", "perplexity", "pinecone", "plaid",
+  "posthog", "prefect", "ramp", "replit", "sentry", "sierra", "snyk", "supabase", "temporal",
+  "vanta", "weaviate", "webflow", "writer", "zapier"
+]

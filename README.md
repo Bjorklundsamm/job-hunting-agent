@@ -92,6 +92,25 @@ Run `.venv/bin/python tests/edge_cases.py` to check all of this (17 scenarios, f
    give `.venv/bin/python` Full Disk Access. The Mac must be awake for the agent to run. For true
    24/7 operation, run it on an always-on machine or a small VPS.
 
+## Running on Windows
+
+Works on Windows 10/11 on an x64 PC (signal-cli's native library has no Windows-on-ARM build).
+
+1. `git clone https://github.com/Bjorklundsamm/job-hunting-agent.git`, then copy `.env`, `data/` and
+   your resume PDF into the folder from the old machine. `data/` is the agent's memory of what it has
+   sent, so don't skip it.
+2. In PowerShell, in the repo folder: `powershell -ExecutionPolicy Bypass -File windows\setup.ps1`.
+   This installs uv, Java 25 and signal-cli, then the Python environment. Put the `SIGNAL_CLI_PATH=`
+   line it prints into `.env`.
+3. Link Signal: on your phone, remove the old machine under Signal → Settings → Linked devices. Then
+   run `& "$env:LOCALAPPDATA\signal-cli\signal-cli-0.14.9\bin\signal-cli.bat" link -n Midna` and scan
+   the `sgnl://` link as a QR code (paste it into any QR generator, or ask Claude Code to render it).
+   Afterwards run one `... -a +1YOURNUMBER receive` to finish syncing.
+4. `.venv\Scripts\python -m job_agent test-signal`, then reply `status` in Note to Self.
+5. Background: `powershell -ExecutionPolicy Bypass -File windows\install-task.ps1`. This registers a
+   scheduled task, "Midna", that starts at logon and restarts if it crashes. Turn off sleep (Settings →
+   System → Power) if you want it searching around the clock.
+
 ## Talking to it on Signal
 
 | Message | Effect |

@@ -22,12 +22,14 @@ def main():
     if not args or args[0] in ("-h", "--help", "help"):
         print(__doc__)
         return
+    for stream in (sys.stdout, sys.stderr):  # Windows consoles default to a non-UTF-8 code page
+        if stream is not None and hasattr(stream, "reconfigure"):
+            stream.reconfigure(encoding="utf-8", errors="replace")
     cfg = load_settings()
-    logging.basicConfig(
-        level=logging.INFO,
-        format="%(asctime)s %(levelname)s %(name)s: %(message)s",
-        handlers=[logging.StreamHandler(), RotatingFileHandler(LOGS / "agent.log", maxBytes=5_000_000, backupCount=3)],
-    )
+    handlers = [RotatingFileHandler(LOGS / "agent.log", maxBytes=5_000_000, backupCount=3, encoding="utf-8")]
+    if sys.stderr is not None:  # None when run windowless (pythonw.exe) by Task Scheduler
+        handlers.append(logging.StreamHandler())
+    logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(name)s: %(message)s", handlers=handlers)
     for noisy in ("httpx", "JobSpy", "jobspy"):
         logging.getLogger(noisy).setLevel(logging.WARNING)
 

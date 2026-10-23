@@ -15,6 +15,7 @@ Messages you send to other people also arrive as syncs; rule 1 ignores them.
 
 import json
 import logging
+import os
 import subprocess
 from collections import deque
 
@@ -39,8 +40,13 @@ class Signal:
         if db and db.get("signal_sent_ts"):
             self._sent_ts.extend(json.loads(db.get("signal_sent_ts")))
 
-    def _run(self, *args, timeout=90):
-        return subprocess.run([self.cli, "-a", self.account, *args], capture_output=True, text=True, timeout=timeout)
+    def _run(self, *args, stdin=None, timeout=90):
+        # signal-cli runs on Java; force UTF-8 on its pipes so emoji survive on Windows, whose default
+        # console encodings are not UTF-8.
+        env = {**os.environ, "SIGNAL_CLI_OPTS": "-Dstdout.encoding=UTF-8 -Dstderr.encoding=UTF-8 "
+               "-Dstdin.encoding=UTF-8 -Dfile.encoding=UTF-8"}
+        return subprocess.run([self.cli, "-a", self.account, *args], input=stdin, capture_output=True,
+                              text=True, encoding="utf-8", errors="replace", timeout=timeout, env=env)
 
     def _remember(self, ts):
         self._sent_ts.append(ts)
@@ -54,7 +60,9 @@ class Signal:
             return True
         target = ["--note-to-self", "--notify-self"] if self.mode == "note_to_self" else [self.user]
         try:
-            r = self._run("-o", "json", "send", "-m", text, *target)
+            # The text goes through stdin, not the command line: on Windows signal-cli is a .bat file,
+            # where cmd.exe would mangle emoji and could interpret characters like & or | in job titles.
+            r = self._run("-o", "json", "send", "--message-from-stdin", *target, stdin=text)
         except (OSError, subprocess.TimeoutExpired) as e:
             log.error("signal send failed: %s", e)
             return False

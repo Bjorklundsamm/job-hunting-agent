@@ -201,7 +201,7 @@ class Agent:
     def _pause(self, hours: int):
         until = self.now() + timedelta(hours=hours)
         self.db.set("paused_until", until.isoformat())
-        self.send_text(f"Fine, I'll lurk in your shadow until {until:%a %-I:%M %p}. Say \"resume\" if you miss me sooner. Eee hee!")
+        self.send_text(f"Fine, I'll lurk in your shadow until {until:%a} {until.hour % 12 or 12}:{until:%M %p}. Say \"resume\" if you miss me sooner. Eee hee!")
 
     def _feedback(self, text: str):
         prefs = load_preferences()

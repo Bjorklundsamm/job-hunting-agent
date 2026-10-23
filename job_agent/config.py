@@ -90,8 +90,8 @@ PREFS_PATH = DATA / "preferences.json"
 def load_preferences() -> Preferences:
     if not PREFS_PATH.exists():
         save_preferences(DEFAULT_PREFERENCES)
-    return Preferences.model_validate_json(PREFS_PATH.read_text())
+    return Preferences.model_validate_json(PREFS_PATH.read_text(encoding="utf-8"))
 
 
 def save_preferences(prefs: Preferences) -> None:
-    PREFS_PATH.write_text(json.dumps(prefs.model_dump(), indent=2) + "\n")
+    PREFS_PATH.write_text(json.dumps(prefs.model_dump(), indent=2) + "\n", encoding="utf-8")

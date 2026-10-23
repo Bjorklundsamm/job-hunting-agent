@@ -493,6 +493,7 @@ dependencies = [
     { name = "pypdf" },
     { name = "python-dotenv" },
     { name = "python-jobspy" },
+    { name = "tzdata", marker = "sys_platform == 'win32'" },
 ]
 
 [package.metadata]
@@ -502,6 +503,7 @@ requires-dist = [
     { name = "pypdf", specifier = ">=6.21.2" },
     { name = "python-dotenv", specifier = ">=1.2.4" },
     { name = "python-jobspy", specifier = ">=1.4.0" },
+    { name = "tzdata", marker = "sys_platform == 'win32'", specifier = ">=2026.5" },
 ]
 
 [[package]]

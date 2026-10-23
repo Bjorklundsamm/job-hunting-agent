@@ -25,7 +25,7 @@ def load_profile(db, llm, cfg, prefs, force=False) -> str:
     """profile.md is yours to edit; it is only regenerated when the resume file changes (or `force`)."""
     h = resume_hash(cfg)
     if PROFILE_PATH.exists() and db.get("resume_hash") == h and not force:
-        return PROFILE_PATH.read_text()
+        return PROFILE_PATH.read_text(encoding="utf-8")
     log.info("building candidate profile from resume")
     pdf = base64.standard_b64encode((ROOT / cfg.resume_path).read_bytes()).decode()
     goals = (
@@ -43,6 +43,6 @@ def load_profile(db, llm, cfg, prefs, force=False) -> str:
         schema=ProfileOut,
         effort="high",
     )
-    PROFILE_PATH.write_text(out.profile_markdown.strip() + "\n")
+    PROFILE_PATH.write_text(out.profile_markdown.strip() + "\n", encoding="utf-8")
     db.set("resume_hash", h)
-    return PROFILE_PATH.read_text()
+    return PROFILE_PATH.read_text(encoding="utf-8")

@@ -8,4 +8,5 @@ dependencies = [
     "pypdf>=6.21.2",
     "python-dotenv>=1.2.4",
     "python-jobspy>=1.4.0",
+    "tzdata>=2026.5 ; sys_platform == 'win32'",
 ]

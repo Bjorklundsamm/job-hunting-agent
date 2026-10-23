@@ -7,13 +7,13 @@
     <string>com.jobagent</string>
     <key>ProgramArguments</key>
     <array>
-        <string>/Users/aloof/Documents/Job Finding Agent/.venv/bin/python</string>
+        <string>/Users/aloof/job-hunting-agent/.venv/bin/python</string>
         <string>-m</string>
         <string>job_agent</string>
         <string>run</string>
     </array>
     <key>WorkingDirectory</key>
-    <string>/Users/aloof/Documents/Job Finding Agent</string>
+    <string>/Users/aloof/job-hunting-agent</string>
     <key>RunAtLoad</key>
     <true/>
     <key>KeepAlive</key>
@@ -21,8 +21,8 @@
     <key>ThrottleInterval</key>
     <integer>60</integer>
     <key>StandardOutPath</key>
-    <string>/Users/aloof/Documents/Job Finding Agent/logs/launchd.out.log</string>
+    <string>/Users/aloof/job-hunting-agent/logs/launchd.out.log</string>
     <key>StandardErrorPath</key>
-    <string>/Users/aloof/Documents/Job Finding Agent/logs/launchd.err.log</string>
+    <string>/Users/aloof/job-hunting-agent/logs/launchd.err.log</string>
 </dict>
 </plist>

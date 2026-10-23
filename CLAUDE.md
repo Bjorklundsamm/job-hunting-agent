@@ -79,6 +79,12 @@ keep working (scenario 12 sets it back to 1).
   non-US/on-site), keyword prescore, description trimming, fingerprint/content hash.
 - **`profile.py`** — builds `data/profile.md` from the resume PDF via the judge model; rebuilt only when
   the resume hash changes.
+- **`self_update.py`** — code changes requested over Signal. When `_feedback`'s model sets
+  `code_change`, the user's verbatim message goes to headless `claude -p` (file tools only), then
+  `tests/edge_cases.py` gates it (one retry), then it is committed and pushed. Failures are stashed.
+  On success the worker exits with `RESTART_CODE` and the `run` supervisor in `__main__.py` (parent
+  process, `MIDNA_WORKER` unset) starts a fresh worker. So `run` is always two processes, and whatever
+  lands on `main` here goes live on the next restart.
 - **`signal_client.py`** — wraps the `signal-cli` subprocess. In `note_to_self` mode the agent and user
   share an account, so inbound messages are accepted only if they're self-syncs, not one of the agent's
   own sent timestamps, and don't start with `MARKER` (🌘). Every outgoing message is prefixed with it.

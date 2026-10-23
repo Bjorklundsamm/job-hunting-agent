@@ -3,6 +3,7 @@
 import json
 import logging
 import re
+import sys
 import time
 from datetime import datetime, timedelta, timezone
 from typing import Literal
@@ -13,6 +14,7 @@ from .config import Preferences, load_preferences, save_preferences
 from .db import DB, now_iso
 from .llm import LLM, BudgetExceeded, LLMFailed
 from .pipeline import Pipeline
+from . import self_update
 from .profile import load_profile, resume_text
 from .prompts import FEEDBACK_SYSTEM, feedback_task
 from .signal_client import Signal
@@ -26,6 +28,7 @@ HELP = """Eee hee! Lost already? Fine, here's what I answer to:
 • status — what I've been up to
 • prefs — what I'm hunting for on your behalf
 • ask about your resume — "review my resume", "how does my resume fit #4?"
+• change how I work — "send digests at 8am too", "make the blurbs shorter". I rewrite my own code, test it, and push it
 Anything else I take as orders, like "#12 too sales-heavy", "more AI support roles" or "no crypto companies". Don't make me guess."""
 
 
@@ -41,6 +44,7 @@ class FeedbackOut(BaseModel):
     job_feedback: list[JobFeedback]
     send_now: bool
     pause_hours: int
+    code_change: bool
 
 
 def _hm(s: str):
@@ -55,6 +59,7 @@ class Agent:
         self.llm = LLM(self.db, cfg)
         self.signal = Signal(cfg, self.db)
         self._profile = None
+        self.restart_pending = False  # set after a self-update commits new code
         self.pipeline = Pipeline(self.db, self.llm, cfg, self.profile)
 
     def profile(self) -> str:
@@ -243,6 +248,19 @@ class Agent:
             self._pause(out.pause_hours)
         if out.send_now:
             self.run_digest(forced=True)
+        if out.code_change:
+            self._change_code(text)
+
+    def _change_code(self, request: str):
+        # `request` is your message verbatim, never model output (see self_update's docstring).
+        log.info("self-update requested: %r", request)
+        committed, msg = self_update.apply_change(request)
+        if committed:
+            self.restart_pending = True
+            msg += "\nRestarting myself to load it. Eee hee!"
+        else:
+            msg = "Hmph. " + msg
+        self.send_text(msg)
 
     def status_text(self) -> str:
         day_start = self.day_start_utc()
@@ -278,6 +296,9 @@ class Agent:
                 if time.time() - last_poll >= sched["signal_poll_seconds"]:
                     last_poll = time.time()
                     self.poll_inbox()
+                    if self.restart_pending:
+                        log.info("restarting to load updated code")
+                        sys.exit(self_update.RESTART_CODE)
 
                 last = self.db.get("last_search")
                 if not last or datetime.fromisoformat(last) <= self.now() - timedelta(minutes=sched["search_interval_minutes"]):

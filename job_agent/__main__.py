@@ -11,10 +11,23 @@
 """
 
 import logging
+import os
+import subprocess
 import sys
 from logging.handlers import RotatingFileHandler
 
-from .config import LOGS, load_settings
+from .config import LOGS, ROOT, load_settings
+from .self_update import RESTART_CODE
+
+
+def supervise():
+    """`run` starts the agent in a child process and starts a fresh one, on the new code, whenever it exits
+    with RESTART_CODE after changing its own code. Any other exit is passed on to launchd / Task Scheduler."""
+    while True:
+        code = subprocess.call([sys.executable, "-m", "job_agent", "run"], cwd=ROOT,
+                               env={**os.environ, "MIDNA_WORKER": "1"})
+        if code != RESTART_CODE:
+            sys.exit(code)
 
 
 def main():
@@ -22,6 +35,8 @@ def main():
     if not args or args[0] in ("-h", "--help", "help"):
         print(__doc__)
         return
+    if args[0] == "run" and not os.getenv("MIDNA_WORKER"):
+        return supervise()
     for stream in (sys.stdout, sys.stderr):  # Windows consoles default to a non-UTF-8 code page
         if stream is not None and hasattr(stream, "reconfigure"):
             stream.reconfigure(encoding="utf-8", errors="replace")
@@ -50,6 +65,8 @@ def main():
         print("sent:", agent.run_digest(forced=True))
     elif cmd == "say":
         agent.handle_message(" ".join(args[1:]))
+        if agent.restart_pending:
+            print("Code changed: restart the running agent to load it.")
     elif cmd == "profile":
         agent._profile = None
         from .config import load_preferences

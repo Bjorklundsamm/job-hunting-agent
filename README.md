@@ -123,6 +123,24 @@ Works on Windows 10/11 on an x64 PC (signal-cli's native library has no Windows-
 | `prefs` | what it's currently looking for |
 | anything else | feedback, e.g. `#7 applied!`, `#3 too sales-heavy`, `no more gov contractors`, `raise my floor to 90k`, or questions about your resume, e.g. `review my resume`, `how does my resume fit #4?` |
 
+### Changing Midna's code from Signal
+
+Ask for a change to how Midna works, rather than to what you're looking for (`send a digest at 08:00
+too`, `make the blurbs shorter`, `add a "top" command that resends the best pick`). Midna gives your
+message, word for word, to Claude Code running headless on this machine (`claude -p`, file edits only,
+no shell). Then:
+
+1. `tests/edge_cases.py` must pass. If it fails, Claude Code gets one try to fix it.
+2. If the tests pass, the change is committed and pushed to GitHub, Midna messages you a summary with
+   the commit id and what it cost, and she restarts on the new code.
+3. If the tests still fail, nothing is committed. The attempt is kept in `git stash list`.
+
+Requirements: Claude Code installed and logged in on this machine (`claude` on PATH, or set
+`CLAUDE_CLI_PATH` in `.env`), git able to push without prompting, and no uncommitted changes in the repo
+(she refuses otherwise). Your `ANTHROPIC_API_KEY` is not passed to Claude Code, so it uses its own login.
+Midna is busy while it works, usually a few minutes, up to 20 per attempt. The repo is public: anything
+your request puts in the code is published.
+
 ## Tuning
 
 Everything static is in `config.toml`: schedule, thresholds, sources/queries rotation, models, budget.

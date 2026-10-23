@@ -13,7 +13,7 @@ from .config import Preferences, load_preferences, save_preferences
 from .db import DB, now_iso
 from .llm import LLM, BudgetExceeded, LLMFailed
 from .pipeline import Pipeline
-from .profile import load_profile
+from .profile import load_profile, resume_text
 from .prompts import FEEDBACK_SYSTEM, feedback_task
 from .signal_client import Signal
 
@@ -25,6 +25,7 @@ HELP = """Eee hee! Lost already? Fine, here's what I answer to:
 • resume — call me back out
 • status — what I've been up to
 • prefs — what I'm hunting for on your behalf
+• ask about your resume — "review my resume", "how does my resume fit #4?"
 Anything else I take as orders, like "#12 too sales-heavy", "more AI support roles" or "no crypto companies". Don't make me guess."""
 
 
@@ -109,6 +110,7 @@ class Agent:
                 parts.append(self.format_job(r, cur.lastrowid))
             header = ("Hey! Drop whatever you're doing. This one's actually good, so don't let it slip away."
                       if kind == "urgent" else
+                      "Eee hee! I went prowling the job boards. This one's worth your time:" if len(rows) == 1 else
                       f"Eee hee! I went prowling the job boards. {len(rows)} worth your time:")
             text = (header + "\n\n" + "\n\n".join(parts)
                     + f"\n\nWell? Tell me what you think (like \"#{refs[0]} not for me, too junior\"). "
@@ -206,13 +208,20 @@ class Agent:
     def _feedback(self, text: str):
         prefs = load_preferences()
         sent = self.db.q("SELECT s.ref, j.title, j.company FROM sent s JOIN jobs j ON j.id=s.job_id ORDER BY s.ref DESC LIMIT 20")
+        # Full listings for any #refs in the message, so "how does my resume fit #4?" can be answered.
+        mentioned = []
+        for ref in dict.fromkeys(int(n) for n in re.findall(r"#(\d+)", text)):
+            r = self.db.one("SELECT j.* FROM sent s JOIN jobs j ON j.id=s.job_id WHERE s.ref=?", ref)
+            if r:
+                mentioned.append(f"#{ref} {self.pipeline._listing(r)}")
         try:
             out = self.llm.parse(
                 purpose="feedback", model=self.cfg.llm["judge_model"],
-                system=FEEDBACK_SYSTEM.format(home=self.cfg.home_location),
+                system=FEEDBACK_SYSTEM.format(home=self.cfg.home_location, resume=resume_text(self.cfg),
+                                              profile=self.profile()),
                 content=feedback_task(json.dumps(prefs.model_dump(), indent=1),
-                                      [f"#{r['ref']} {r['title']} — {r['company']}" for r in sent], text),
-                schema=FeedbackOut, effort="low",
+                                      [f"#{r['ref']} {r['title']} — {r['company']}" for r in sent], text, mentioned),
+                schema=FeedbackOut, effort="medium",
             )
         except (BudgetExceeded, LLMFailed) as e:
             log.warning("feedback not processed: %s", e)

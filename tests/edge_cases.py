@@ -28,6 +28,7 @@ A.LLM.parse = fake_parse
 
 SENDS = []; DELIVER = {"ok": True}
 cfg = C.load_settings()
+cfg.raw["delivery"]["max_per_digest"] = 3  # scenarios below exercise multi-job messages; #12 checks the default of 1
 ag = A.Agent(cfg)
 def fake_send(text):
     if DELIVER["ok"]: SENDS.append(text)
@@ -124,3 +125,10 @@ ag.db.x("UPDATE jobs SET last_seen='2026-01-01T00:00:00+00:00' WHERE id='linkedi
 e = job(32, title="Support Engineer", company="Dup Inc", site="ziprecruiter"); print("   ingest:", pl.ingest(e, prefs))
 SCREEN[e["id"]] = (90, "remote"); pl.screen_pending()
 ok(any(r["id"] == "ziprecruiter:32" for r in pl.candidates(78, 100)), "repost months later is eligible again")
+
+# 12. One job per message
+cfg.raw["delivery"]["max_per_digest"] = 1
+for i in (90, 91):
+    j = job(i); pl.ingest(j, prefs); SCREEN[j["id"]] = (95, "remote"); JUDGE[j["id"]] = 95
+pl.screen_pending(); n = len(sent_ids()); digest()
+ok(len(sent_ids()) == n + 1 and SENDS[-1].count("\n#") == 1, "max_per_digest=1 sends exactly one job per message")

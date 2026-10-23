@@ -1,7 +1,7 @@
 # Midna — Job Finding Agent
 
 Midna (yes, the Twilight Princess imp, in personality only) searches job boards on a rotation, scores every listing against your resume, and sends you only the
-best 1–3 over Signal a few times a day. You can reply in Signal to steer it.
+single best one over Signal a few times a day. You can reply in Signal to steer it, or ask about your resume.
 
 ## How it works
 
@@ -15,7 +15,7 @@ free filters   dedupe (same id, or same company+title on another board) · title
                avoided companies · listed pay below floor · clearly on-site · keyword pre-score
       │
       ▼
-Haiku 5.5      screens up to 40 new listings/cycle in batches of 8 (≈ $0.005 per cycle)
+Haiku 5.5      screens up to 80 new listings/cycle in batches of 8 (≈ $0.005 per cycle)
       │        score 0–100 with a "read it like a human" rubric (degrees ignored, inflated
       │        years discounted, wish-list requirements treated as wish lists)
       ▼
@@ -23,7 +23,7 @@ Opus 5.5       only the shortlist (first-pass ≥ 68) gets a careful final read 
       │        it must score ≥ 78 to be sent
       │
       ▼
-Signal         digests at 09:00 / 12:30 / 17:30 (max 3 jobs, nothing if nothing qualifies)
+Signal         digests at 09:00 / 12:30 / 17:30 (1 job each, nothing if nothing qualifies)
                urgent single job if a listing scores ≥ 92 (max 2/day), only 07:00–22:00
 ```
 
@@ -49,8 +49,9 @@ Signal         digests at 09:00 / 12:30 / 17:30 (max 3 jobs, nothing if nothing 
 2. Ranked by Opus's final score. Opus is told to avoid ties, so its scores decide most of the order.
    Exact ties go to the listing found most recently, then the highest listed pay, then a fixed order
    (never random).
-3. At most one job per company in a single message. The other one leads the next message.
-4. Strong listings that don't make a message aren't lost. They wait for the next digest (up to 9 a day)
+3. Each message carries one job (`max_per_digest`). If you raise that, a message still holds at most one
+   job per company.
+4. Strong listings that don't make a message aren't lost. They wait for the next digest (or `more`)
    for as long as the listing is still being seen (`candidate_max_age_days`).
 5. **Never sent twice**: a job is blocked only once Signal confirms delivery (a failed send is rolled
    back). The same opening on another board is blocked for `dedupe_window_days` (45). After that, a
@@ -58,7 +59,7 @@ Signal         digests at 09:00 / 12:30 / 17:30 (max 3 jobs, nothing if nothing 
    it wasn't for you or that you applied.
 6. Preference changes apply at send time too (avoided companies, pay floor), not just to new listings.
 
-Run `.venv/bin/python tests/edge_cases.py` to check all of this (17 scenarios, free).
+Run `.venv/bin/python tests/edge_cases.py` to check all of this (18 scenarios, free).
 
 ## Setup
 
@@ -120,7 +121,7 @@ Works on Windows 10/11 on an x64 PC (signal-cli's native library has no Windows-
 | `resume` | un-pause |
 | `status` | listings seen, queue size, today's spend |
 | `prefs` | what it's currently looking for |
-| anything else | feedback, e.g. `#7 applied!`, `#3 too sales-heavy`, `no more gov contractors`, `raise my floor to 90k` |
+| anything else | feedback, e.g. `#7 applied!`, `#3 too sales-heavy`, `no more gov contractors`, `raise my floor to 90k`, or questions about your resume, e.g. `review my resume`, `how does my resume fit #4?` |
 
 ## Tuning
 

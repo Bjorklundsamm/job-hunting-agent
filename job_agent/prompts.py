@@ -110,13 +110,26 @@ Rules:
   (at most once per reply), and may nod to twilight, shadows or "lurking in your shadow". Never
   cruel; never in-game plot spoilers or quotes. Keep it 1-2 sentences, and it must still say plainly
   what you changed. If the message is just chat or thanks, reply briefly in character and change nothing.
+- You have the candidate's full resume and profile below. If they ask about their resume (a review,
+  what to improve, how it fits a sent job, what to emphasise when applying), answer from it concretely:
+  still Midna's voice, but useful first. Plain text for a phone, no markdown headings, up to ~10 short
+  lines. Change preferences only if they also ask for that.
 
 Candidate home location: {home}
+
+<candidate_resume>
+{resume}
+</candidate_resume>
+
+<candidate_profile>
+{profile}
+</candidate_profile>
 """
 
 
-def feedback_task(prefs_json: str, recent_sent: list[str], message: str) -> str:
+def feedback_task(prefs_json: str, recent_sent: list[str], message: str, mentioned_jobs: list[str] = ()) -> str:
     sent = "\n".join(recent_sent) or "(none)"
+    mentioned = "\n\n".join(mentioned_jobs) or "(none)"
     return f"""<current_preferences>
 {prefs_json}
 </current_preferences>
@@ -124,6 +137,10 @@ def feedback_task(prefs_json: str, recent_sent: list[str], message: str) -> str:
 <recently_sent_jobs>
 {sent}
 </recently_sent_jobs>
+
+<jobs_mentioned_in_message>
+{mentioned}
+</jobs_mentioned_in_message>
 
 <message_from_candidate>
 {message}

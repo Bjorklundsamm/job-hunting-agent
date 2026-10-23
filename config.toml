@@ -13,7 +13,7 @@ search_interval_minutes = 90      # one source is searched per cycle, rotating t
 signal_poll_seconds = 60
 
 [delivery]
-max_per_digest = 3
+max_per_digest = 1                # jobs per message; `more` sends the next one
 shortlist_score = 68              # first-pass (Haiku) score that earns a careful read by the judge model
 urgent_shortlist_score = 80       # same, for new listings checked every cycle for an urgent send
 min_score = 78                    # judge's final score needed to be sent, even if a digest ends up empty

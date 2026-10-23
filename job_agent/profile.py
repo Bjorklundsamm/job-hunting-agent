@@ -5,6 +5,7 @@ import hashlib
 import logging
 
 from pydantic import BaseModel
+from pypdf import PdfReader
 
 from .config import DATA, ROOT
 from .prompts import PROFILE_INSTRUCTIONS
@@ -19,6 +20,16 @@ class ProfileOut(BaseModel):
 
 def resume_hash(cfg) -> str:
     return hashlib.sha1((ROOT / cfg.resume_path).read_bytes()).hexdigest()
+
+
+def resume_text(cfg) -> str:
+    """The resume's text, read fresh each call so Midna always sees the current file."""
+    path = ROOT / cfg.resume_path
+    try:
+        return "\n".join((page.extract_text() or "") for page in PdfReader(path).pages).strip() or "(no text in resume PDF)"
+    except Exception as e:  # missing or unreadable file must not break message handling
+        log.warning("could not read resume %s: %s", path, e)
+        return "(resume unavailable)"
 
 
 def load_profile(db, llm, cfg, prefs, force=False) -> str:
